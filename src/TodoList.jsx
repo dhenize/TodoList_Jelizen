@@ -1,83 +1,123 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 
-import searchlogo from './assets/Pics/search.png'
-import list from './assets/Pics/list.png'
-import bin from './assets/Pics/delete.png'
-import add from './assets/Pics/plus.png'
-
+import edit from './assets/Pics/edit.png';
+import bin from './assets/Pics/delete.png';
+import add from './assets/Pics/plus.png';
 
 export default function TodoList() {
+  const [todos, setTodos] = useState([]);
+  const [input, setInput] = useState("");
+  const [editId, setEditId] = useState(null);
 
-  const [count, setCount] = useState(0);
+  // ADD OR EDIT TASK
+  function addOrEditTodo() {
+    if (!input.trim()) return;
 
-  const handleIncrement = () => {
-    setCount(count + 1);
-  };
+    if (editId !== null) {
+      setTodos(
+        todos.map((todo) =>
+          todo.id === editId ? { ...todo, text: input } : todo
+        )
+      );
+      setEditId(null);
+    } else {
+      const newTodo = {
+        id: Date.now(),
+        text: input,
+        completed: false,
+        createdAt: new Date().toLocaleString(),
+        completedAt: null,
+      };
+      setTodos([newTodo, ...todos]);
+    }
 
-  const handleDecrement = () => {
-    setCount(count - 1);
-  };
+    setInput("");
+  }
+
+  // TOGGLE COMPLETE
+  function toggleComplete(id) {
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id
+          ? {
+              ...todo,
+              completed: !todo.completed,
+              completedAt: !todo.completed ? new Date().toLocaleString() : null,
+            }
+          : todo
+      )
+    );
+  }
+
+  // DELETE TASK
+  function deleteTodo(id) {
+    setTodos(todos.filter((todo) => todo.id !== id));
+  }
+
+  // START EDITING
+  function startEdit(todo) {
+    setInput(todo.text);
+    setEditId(todo.id);
+  }
 
   return (
-    <div className='flex flex-row h-[40rem]'>
-      
-      {/*SIDE NAVIGATION*/}
-      <aside className='bg-[#ECEFCE] p-3 rounded-xl'>
-        <div className='flex m-2 mb-8 gap-38'>
-          <h1 className='text-3xl font-bold'>MENU</h1>
-          <button className='font-extrabold'>☰</button>
-        </div>
-
-        <div className='flex items-center'>
-          <img src = {searchlogo} className='h-7 mx-2'></img>
-          <input className='text-xl' placeholder='Search'>
-          </input>
-        </div>
-
-        
-        <div className='py-10'>
-          <button className='flex flex-row items-center gap-4'>
-            <img src = {list}></img>
-            My Todo List
-          </button>
-        </div>
-
-
-        <div>
-          <button className='flex flex-row items-center gap-4'>
-            <img src = {bin} className='mx-1'></img>
-            Deleted Items
-          </button>
-        </div>
-        
-      </aside>
-
-
-      {/*MAIN SECTION*/}
+    <div className='flex h-[40rem] p-3 rounded-xl'>
+      {/* MAIN SECTION */}
       <section className='mx-20 my-5'>
-
         <div className='flex flex-row gap-5 items-center'>
           <h1 className='text-3xl font-bold'>Task</h1>
-          <h2 className='bg-[#ECEFCE] py-1.5 px-6 rounded-md'>2</h2>
+          <h2 className='bg-[#CC9629] py-1.5 px-6 rounded-md'>{todos.length}</h2>
         </div>
 
-        <button className='flex flex-row gap-3 my-7 w-[20rem] h-[3rem] items-center rounded-md border-1 text-xl'>
-          <img src = {add}></img>
-          Add Task
-        </button>
-
-        <div className='flex items-center'>
-          <input id="default-checkbox" type="checkbox" class="w-5 h-5 rounded-md"></input>
-          <label for="default-checkbox" class = "ms-3">Research</label>
+        <div className='flex flex-row items-center'>
+          <input
+            type='text'
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder='Enter task here...'
+            className='flex-grow my-7 w-[30rem] h-[3rem] items-center bg-white rounded-l-md border text-sm'
+          />
+          <button
+            onClick={addOrEditTodo}
+            className='flex justify-center items-center bg-[#CC9629] w-[3rem] h-[3rem] rounded-r-md'
+          >
+            <img src={add} className='h-[2rem]' />
+          </button>
         </div>
-        
 
-
-        {/*<button onClick = {handleIncrement}>Increment</button>
-        <button onClick = {handleDecrement}>Decrement</button>
-        <p>{count}</p>*/}
+        <ul className='space-y-3'>
+          {todos.map((todo) => (
+            <li
+              key={todo.id}
+              className='flex flex-col md:flex-row items-start md:items-center p-5 my-4 rounded-md bg-[#ECEFCE]'
+            >
+              <div className='flex items-center w-full md:w-auto'>
+                <input
+                  type='checkbox'
+                  checked={todo.completed}
+                  onChange={() => toggleComplete(todo.id)}
+                  className='mr-2'
+                />
+                <span className={`flex-grow ${todo.completed ? 'line-through text-gray-500' : 'text-gray-800'}`}>
+                  {todo.text}
+                </span>
+              </div>
+              <div className='text-xs text-gray-600 mt-1 md:mt-0 md:ml-4'>
+                Created: {todo.createdAt}
+                {todo.completed && <div>Completed: {todo.completedAt}</div>}
+              </div>
+              <div className='flex gap-2 mt-2 md:mt-0 md:ml-auto'>
+                <button onClick={() => startEdit(todo)} className='text-blue-600'>
+                  <img src={edit} alt='Edit' />
+                </button>
+                <button onClick={() => deleteTodo(todo.id)}>
+                  <img src={bin} alt='Delete' />
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
       </section>
     </div>
-  )
+  );
 }
-
